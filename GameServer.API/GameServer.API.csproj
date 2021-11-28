@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Grpc.AspNetCore" Version="2.40.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Protobuf Include="..\..\GameServer-Host\GameServer.Host.Api\Protos\gameserver_host.proto" GrpcServices="Client">
+      <Link>Protos\gameserver_host.proto</Link>
+    </Protobuf>
+    <Protobuf Include="..\..\GameServer-Host\GameServer.Host.Api\Protos\logger.proto" GrpcServices="Client">
+      <Link>Protos\logger.proto</Link>
+    </Protobuf>
+    <Protobuf Include="..\..\GameServer-Host\GameServer.Host.Api\Protos\server.proto" GrpcServices="Client">
+      <Link>Protos\server.proto</Link>
+    </Protobuf>
+  </ItemGroup>
+
+</Project>
