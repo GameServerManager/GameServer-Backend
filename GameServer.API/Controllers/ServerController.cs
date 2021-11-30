@@ -1,4 +1,5 @@
-﻿using GameServer.API.Services;
+﻿using GameServer.API.Models;
+using GameServer.API.Services;
 using GameServer.Host.Api;
 using Grpc.Net.Client;
 using Microsoft.AspNetCore.Mvc;
@@ -18,36 +19,70 @@ namespace GameServer.API.Controllers
             _service = service;
         }
 
-        // GET: api/<ServerController>
         [HttpGet]
-        public IEnumerable<string> Get()
+        public async Task<IEnumerable<Server>> Get()
         {
-            return new string[] { "value1", "value2" };
+            var list = await _service.GetAll();
+            return list.AsEnumerable();
         }
 
-        // GET api/<ServerController>/5
         [HttpGet("{id}")]
-        public string Get(int id)
+        public async Task<Server> Get(string id)
         {
-            return "value";
+            var list = await _service.Get(id);
+            return list;
         }
 
-        // POST api/<ServerController>
-        [HttpPost]
-        public void Post([FromBody] string value)
+        [HttpPost("{id}/Import")]
+        public async Task<ActionResult> Import(string id, [FromBody] ServerConfig config)
         {
+            await _service.Import(id, (v) => WesocketSend(v));
+            return Ok();
         }
 
-        // PUT api/<ServerController>/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+
+        [HttpPost("{id}/Update")]
+        public async Task<ActionResult> Update(string id)
         {
+            await _service.Update(id);
+            return Ok();
         }
 
-        // DELETE api/<ServerController>/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
+
+        [HttpPost("{id}/Start")]
+        public async Task<ActionResult> Start(string id)
         {
+            await _service.Start(id);
+            return Ok();
+        }
+
+
+        [HttpPost("{id}/Stop")]
+        public async Task<ActionResult> Stop(string id)
+        {
+            await _service.Stop(id);
+            return Ok();
+        }
+
+
+        [HttpPost("{id}/Attach")]
+        public async Task<ActionResult> Attach(string id)
+        {
+            await _service.Attach(id, (v) => WesocketSend(v));
+            return Ok();
+        }
+
+
+        [HttpPost("{id}/Log")]
+        public async Task<string> Log(string id)
+        {
+            var log = await _service.GetLog(id);
+            return log;
+        }
+
+        private void WesocketSend(string v)
+        {
+            Console.WriteLine(v);
         }
     }
 }
