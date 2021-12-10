@@ -33,10 +33,10 @@ namespace GameServer.API.Controllers
             return list;
         }
 
-        [HttpPost("{id}/Import")]
-        public async Task<ActionResult> Import(string id, [FromBody] ServerConfig config)
+        [HttpPost("Import")]
+        public async Task<ActionResult> Import([FromBody] ServerConfig config)
         {
-            await _service.Import(id, (v) => WesocketSend(v));
+            await _service.Import(config, (v) => WesocketSend(v));
             return Ok();
         }
 

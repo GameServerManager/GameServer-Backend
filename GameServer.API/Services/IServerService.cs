@@ -1,4 +1,5 @@
-﻿using GameServer.Host.Api;
+﻿using GameServer.API.Models;
+using GameServer.Host.Api;
 
 namespace GameServer.API.Services
 {
@@ -6,7 +7,7 @@ namespace GameServer.API.Services
     {
         Task<Server> Get(string id);
         Task<List<Server>> GetAll();
-        Task Import(string id, Action<string> callBack);
+        Task Import(ServerConfig id, Action<string> callBack);
         Task<Status> Start(string id);
         Task<Status> Stop(string id);
         Task Update(string id);

@@ -19,10 +19,10 @@ namespace GameServer.API.Services
             channel.Dispose();
         }
 
-        public async Task<List<History>> GetHistoryAsync(string id)
+        public async Task<History> GetHistoryAsync(string id)
         {
             var response = await client.GetHistoryAsync(new GetHistoryRequest() { Id = id });
-            return response.History.ToList();
+            return response;
         }
 
         public async Task StartPerformanceLogger(string id)

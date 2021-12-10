@@ -6,6 +6,6 @@ namespace GameServer.API.Services
     {
         Task StartPerformanceLogger(string id);
         Task StopPerformanceLogger(string id);
-        Task<List<History>> GetHistoryAsync(string id);
+        Task<History> GetHistoryAsync(string id);
     }
 }
