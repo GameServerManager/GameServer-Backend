@@ -36,7 +36,7 @@ namespace GameServer.API.Controllers
         [HttpPost("Import")]
         public async Task<ActionResult> Import([FromBody] ServerConfig config)
         {
-            await _service.Import(config, (v) => WesocketSend(v));
+            await _service.Import(config, (v) => { });
             return Ok();
         }
 
@@ -64,25 +64,11 @@ namespace GameServer.API.Controllers
             return Ok();
         }
 
-
-        [HttpPost("{id}/Attach")]
-        public async Task<ActionResult> Attach(string id)
-        {
-            await _service.Attach(id, (v) => WesocketSend(v));
-            return Ok();
-        }
-
-
-        [HttpPost("{id}/Log")]
+        [HttpGet("{id}/Log")]
         public async Task<string> Log(string id)
         {
             var log = await _service.GetLog(id);
             return log;
-        }
-
-        private void WesocketSend(string v)
-        {
-            Console.WriteLine(v);
         }
     }
 }
