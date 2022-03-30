@@ -16,19 +16,27 @@ namespace GameServer.API.Services
 
         }
 
-        public async Task Attach(string id, Action<Dictionary<string, Dictionary<string, string>>> callBack)
+        public async Task Attach(string id, Action<Dictionary<string, Dictionary<string, string>>> msgCallBack, Action<string> closeCallback)
         {
             var stream = client.Attach(new AttachRequest() { Id = id });
             var cToken = new CancellationTokenSource();
 
             while (await stream.ResponseStream.MoveNext(cToken.Token))
             {
-                var tree = new Dictionary<string, Dictionary<string, string>> ()
-                {
-                    { stream.ResponseStream.Current.ExecID, new Dictionary<string, string>() { { stream.ResponseStream.Current.ScriptName, stream.ResponseStream.Current.Message} } }
-                };
 
-                callBack(tree);
+                if (stream.ResponseStream.Current.Type == "message")
+                {
+                    var tree = new Dictionary<string, Dictionary<string, string>> ()
+                    {
+                        { stream.ResponseStream.Current.ScriptName, new Dictionary<string, string>() { { stream.ResponseStream.Current.ExecID, stream.ResponseStream.Current.Message} } }
+                    };
+                
+                    msgCallBack(tree);
+                }
+                else if (stream.ResponseStream.Current.Type == "closed")
+                {
+                    closeCallback(stream.ResponseStream.Current.ExecID);
+                }
             }
         }
 
@@ -56,16 +64,35 @@ namespace GameServer.API.Services
             {
                 Logs.TryAdd(logsEntry.ScriptName, new Dictionary<string, string>());
 
-                foreach(var l  in logsEntry.ScriptLogs)
+                foreach (var l in logsEntry.ScriptLogs)
                 {
-                    if(!Logs[logsEntry.ScriptName].TryAdd(l.ExecID, l.StdOut))
+                    if (!Logs[logsEntry.ScriptName].TryAdd(l.ExecID, l.StdOut))
                     {
                         Logs[logsEntry.ScriptName][l.ExecID] = l.StdOut;
                     }
                 }
             }
             return Logs;
-        } 
+        }
+
+        public async Task<Dictionary<string, Dictionary<string, string>>> GetActiveLogs(string id)
+        {
+            var Logs = new Dictionary<string, Dictionary<string, string>>();
+            var result = await client.GetActiveLogsAsync(new LogRequest() { Id = id });
+            foreach (var logsEntry in result.ScriptLogs)
+            {
+                Logs.TryAdd(logsEntry.ScriptName, new Dictionary<string, string>());
+
+                foreach (var l in logsEntry.ScriptLogs)
+                {
+                    if (!Logs[logsEntry.ScriptName].TryAdd(l.ExecID, l.StdOut))
+                    {
+                        Logs[logsEntry.ScriptName][l.ExecID] = l.StdOut;
+                    }
+                }
+            }
+            return Logs;
+        }
 
         public async Task Import(ServerConfig id, Action<string> callBack)
         {

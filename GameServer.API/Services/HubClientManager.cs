@@ -22,12 +22,12 @@ namespace GameServer.API.Services
         {
             var contains = AttatchedClients.TryGetValue(serverID, out var clientIds);
 
-            var logs = await _serverService.GetLog(serverID);
+            var logs = await _serverService.GetActiveLogs(serverID);
             await _hubContext.Clients.Client(clientID).SendAsync("ConsoleMessage", serverID, logs);
             if (!contains)
             {
                 AttatchedClients.Add(serverID, new() { clientID });
-                 _ = _serverService.Attach(serverID, msgTree => Replay(serverID, msgTree));
+                 _ = _serverService.Attach(serverID, msgTree => Replay(serverID, msgTree), execID => Close(serverID, execID));
             }
             else
             {
@@ -55,6 +55,16 @@ namespace GameServer.API.Services
             if (contains)
             {
                 await _hubContext.Clients.Clients(clientIds).SendAsync("ConsoleMessage", id, messageTree);
+            }
+        }
+
+        private async void Close(string id, string execID)
+        {
+            var contains = AttatchedClients.TryGetValue(id, out var clientIds);
+
+            if (contains)
+            {
+                await _hubContext.Clients.Clients(clientIds).SendAsync("StdOutClosed", id, execID);
             }
         }
     }
