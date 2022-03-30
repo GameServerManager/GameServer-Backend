@@ -16,13 +16,19 @@ namespace GameServer.API.Services
 
         }
 
-        public async Task Attach(string id, Action<string> callBack)
+        public async Task Attach(string id, Action<Dictionary<string, Dictionary<string, string>>> callBack)
         {
             var stream = client.Attach(new AttachRequest() { Id = id });
             var cToken = new CancellationTokenSource();
+
             while (await stream.ResponseStream.MoveNext(cToken.Token))
             {
-                callBack(stream.ResponseStream.Current.Msg);
+                var tree = new Dictionary<string, Dictionary<string, string>> ()
+                {
+                    { stream.ResponseStream.Current.ExecID, new Dictionary<string, string>() { { stream.ResponseStream.Current.ScriptName, stream.ResponseStream.Current.Message} } }
+                };
+
+                callBack(tree);
             }
         }
 
@@ -42,10 +48,23 @@ namespace GameServer.API.Services
             return response.Servers.ToList();
         }
 
-        public async Task<string> GetLog(string id)
+        public async Task<Dictionary<string, Dictionary<string, string>>> GetLog(string id)
         {
+            var Logs = new Dictionary<string, Dictionary<string, string>>();
             var result = await client.GetLogAsync(new LogRequest() { Id = id });
-            return result.Log;
+            foreach (var logsEntry in result.ScriptLogs)
+            {
+                Logs.TryAdd(logsEntry.ScriptName, new Dictionary<string, string>());
+
+                foreach(var l  in logsEntry.ScriptLogs)
+                {
+                    if(!Logs[logsEntry.ScriptName].TryAdd(l.ExecID, l.StdOut))
+                    {
+                        Logs[logsEntry.ScriptName][l.ExecID] = l.StdOut;
+                    }
+                }
+            }
+            return Logs;
         } 
 
         public async Task Import(ServerConfig id, Action<string> callBack)
@@ -112,8 +131,18 @@ namespace GameServer.API.Services
             var cToken = new CancellationTokenSource();
             while (await stream.ResponseStream.MoveNext(cToken.Token))
             {
-                callBack(stream.ResponseStream.Current.Msg);
+                callBack(stream.ResponseStream.Current.Message);
             }
+        }
+
+        public async Task SendCommand(string containerID, string execId, string command)
+        {
+            await client.SendCommandAsync(new SendCommandRequest()
+            {
+                ContainerID = containerID,
+                ExecId = execId,
+                Command = command
+            });
         }
 
         public async Task<Status> Start(string id)

@@ -11,7 +11,8 @@ namespace GameServer.API.Services
         Task<Status> Start(string id);
         Task<Status> Stop(string id);
         Task Update(string id);
-        Task<string> GetLog(string id);
-        Task Attach(string id, Action<string> callBack);
+        Task<Dictionary<string, Dictionary<string, string>>> GetLog(string id);
+        Task Attach(string id, Action<Dictionary<string, Dictionary<string, string>>> callBack);
+        Task SendCommand(string containerID, string execId, string command);
     }
 }

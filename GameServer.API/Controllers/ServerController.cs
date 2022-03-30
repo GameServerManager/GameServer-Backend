@@ -3,6 +3,7 @@ using GameServer.API.Services;
 using GameServer.Host.Api;
 using Grpc.Net.Client;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.Json;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -68,7 +69,7 @@ namespace GameServer.API.Controllers
         public async Task<string> Log(string id)
         {
             var log = await _service.GetLog(id);
-            return log;
+            return JsonSerializer.Serialize(log);
         }
     }
 }

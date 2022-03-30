@@ -20,6 +20,7 @@ builder.Services.AddCors(options =>
 builder.Services.AddSingleton<ILoggerService>(s => new LoggerService(gRPCUrl))
     .AddSingleton<IServerService>(s => new ServerService(gRPCUrl))
     .AddSingleton<IHealthCheckService>(s => new HealthCheckService(gRPCUrl))
+    .AddSingleton<IHubClientManager, HubClientManager>()
     .AddEndpointsApiExplorer()
     .AddSwaggerGen()
     .AddControllers();
