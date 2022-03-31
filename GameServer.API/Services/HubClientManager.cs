@@ -18,11 +18,19 @@ namespace GameServer.API.Services
         public void AddClient(string clientID)
         {}
 
-        public async void Attach(string clientID, string serverID)
+        public async void Attach(string clientID, string serverID, bool allLogs)
         {
             var contains = AttatchedClients.TryGetValue(serverID, out var clientIds);
 
-            var logs = await _serverService.GetActiveLogs(serverID);
+            Dictionary<string, Dictionary<string, string>> logs;
+            if (allLogs)
+            {
+                logs = await _serverService.GetLog(serverID);
+            }
+            else
+            {
+                logs = await _serverService.GetActiveLogs(serverID);
+            }
             await _hubContext.Clients.Client(clientID).SendAsync("ConsoleMessage", serverID, logs);
             if (!contains)
             {

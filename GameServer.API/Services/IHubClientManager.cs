@@ -4,7 +4,7 @@
     {
         void AddClient(string clientID);
         void RemoveClient(string clientID);
-        void Attach(string clientID, string serverID);
+        void Attach(string clientID, string serverID, bool allLogs);
         void SendCommand(string containerID, string execId, string command);
     }
 }

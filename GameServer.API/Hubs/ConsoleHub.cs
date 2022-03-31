@@ -29,10 +29,10 @@ namespace GameServer.API.Hubs
         }
 
         [HubMethodName("Attach")]
-        public async Task Attach(string id)
+        public async Task Attach(string id, bool allLogs)
         {
             _logger.LogDebug($"Client Attatched: {Context.ConnectionId}");
-            _hubManager.Attach(Context.ConnectionId, id);
+            _hubManager.Attach(Context.ConnectionId, id, allLogs);
         }
 
         [HubMethodName("SendCommand")]
