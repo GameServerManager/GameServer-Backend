@@ -1,5 +1,10 @@
+using GameServer.API.Helper;
 using GameServer.API.Hubs;
 using GameServer.API.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using System.Xml;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,15 +21,84 @@ builder.Services.AddCors(options =>
             .AllowCredentials();
         ;
     });
+
 });
 builder.Services.AddSingleton<ILoggerService>(s => new LoggerService(gRPCUrl))
     .AddSingleton<IServerService>(s => new ServerService(gRPCUrl))
     .AddSingleton<IHealthCheckService>(s => new HealthCheckService(gRPCUrl))
     .AddSingleton<IHubClientManager, HubClientManager>()
+    .AddSingleton<IDatabaseService, DatabaseService>()
+    .AddSingleton<IUserService, UserService>()
     .AddEndpointsApiExplorer()
     .AddSwaggerGen()
     .AddControllers();
 builder.Services.AddSignalR();
+
+
+var doc = new XmlDocument();
+doc.Load("secret.xml");
+var key = doc.DocumentElement?.SelectSingleNode("/secret/key")?.InnerText;
+
+
+builder.Services.AddAuthentication(x =>
+{
+    x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(x =>
+{
+    x.SecurityTokenValidators.Clear();
+    x.SecurityTokenValidators.Add(new CustomJwtTokenValidator());
+    x.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            var accessToken = context.Request.Headers.Authorization.ToString();
+
+            // If the request is for our hub...
+            var path = context.HttpContext.Request.Path;
+            if (!string.IsNullOrEmpty(accessToken))
+            {
+                // Read the token out of the query string
+                context.Token = accessToken;
+            }
+            return Task.CompletedTask;
+        },
+        OnAuthenticationFailed = context =>
+        {
+            return Task.CompletedTask;
+
+        },
+        OnChallenge = context =>
+        {
+            return Task.CompletedTask;
+
+        },
+        OnForbidden = context =>
+        {
+            return Task.CompletedTask;
+
+        },
+        OnTokenValidated = context =>
+        {
+            return Task.CompletedTask;
+
+        }
+    };
+
+
+    x.RequireHttpsMetadata = false;
+    x.SaveToken = true;
+    x.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(key)),
+        ValidateIssuer = false,
+        ValidateAudience = false
+    };
+
+});
+
 
 builder.Logging.ClearProviders()
     .AddConsole()
@@ -40,6 +114,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseAuthentication();
 app.UseAuthorization();
 app.UseCors(corsName);
 app.MapControllers();

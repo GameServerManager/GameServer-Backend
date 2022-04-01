@@ -2,6 +2,7 @@
 using GameServer.API.Services;
 using GameServer.Host.Api;
 using Grpc.Net.Client;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
 
@@ -9,6 +10,7 @@ using System.Text.Json;
 
 namespace GameServer.API.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class ServerController : ControllerBase
@@ -21,6 +23,7 @@ namespace GameServer.API.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = ("User"))]
         public async Task<IEnumerable<Server>> Get()
         {
             var list = await _service.GetAll();
@@ -28,6 +31,7 @@ namespace GameServer.API.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize(Roles = ("User"))]
         public async Task<Server> Get(string id)
         {
             var list = await _service.Get(id);
@@ -35,6 +39,7 @@ namespace GameServer.API.Controllers
         }
 
         [HttpPost("Import")]
+        [Authorize(Roles = ("User"))]
         public async Task<ActionResult> Import([FromBody] ServerConfig config)
         {
             await _service.Import(config, (v) => { });
@@ -43,6 +48,7 @@ namespace GameServer.API.Controllers
 
 
         [HttpPost("{id}/Update")]
+        [Authorize(Roles = ("User"))]
         public async Task<ActionResult> Update(string id)
         {
             await _service.Update(id);
@@ -51,6 +57,7 @@ namespace GameServer.API.Controllers
 
 
         [HttpPost("{id}/Start")]
+        [Authorize(Roles = ("User"))]
         public async Task<ActionResult> Start(string id)
         {
             await _service.Start(id);
@@ -59,6 +66,7 @@ namespace GameServer.API.Controllers
 
 
         [HttpPost("{id}/Stop")]
+        [Authorize(Roles = ("User"))]
         public async Task<ActionResult> Stop(string id)
         {
             await _service.Stop(id);
@@ -66,6 +74,7 @@ namespace GameServer.API.Controllers
         }
 
         [HttpGet("{id}/Log")]
+        [Authorize(Roles = ("User"))]
         public async Task<string> Log(string id)
         {
             var log = await _service.GetLog(id);
