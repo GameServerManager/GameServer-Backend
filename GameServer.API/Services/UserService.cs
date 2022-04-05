@@ -30,7 +30,6 @@ namespace GameServer.API.Services
             var login = await _databaseService.GetUser(username);
             if (login == null || login.Hash == null || !PasswordHash.VerifyPassword(password, login.Hash, login.Salt))
                 return null;
-;
 
             var tokenHandler = new JwtSecurityTokenHandler();
             var tokenDescriptor = new SecurityTokenDescriptor

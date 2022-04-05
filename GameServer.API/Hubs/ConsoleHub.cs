@@ -1,4 +1,5 @@
 ﻿using GameServer.API.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 
 namespace GameServer.API.Hubs
@@ -6,10 +7,12 @@ namespace GameServer.API.Hubs
     public class ConsoleHub : Hub
     {
         private readonly ILogger<ConsoleHub> _logger;
+        private IDatabaseService _databaseService;
         private readonly IHubClientManager _hubManager;
 
-        public ConsoleHub(ILogger<ConsoleHub> logger, IHubClientManager hubManager)
+        public ConsoleHub(ILogger<ConsoleHub> logger, IHubClientManager hubManager, IDatabaseService databaseService)
         {
+            _databaseService = databaseService;
             _hubManager = hubManager;
             _logger = logger;
         }
@@ -31,6 +34,9 @@ namespace GameServer.API.Hubs
         [HubMethodName("Attach")]
         public async Task Attach(string id, bool allLogs)
         {
+            if (! await CheckPermission(id, Context.User.Identity.Name))
+                return;
+
             _logger.LogDebug($"Client Attatched: {Context.ConnectionId}");
             _hubManager.Attach(Context.ConnectionId, id, allLogs);
         }
@@ -38,8 +44,18 @@ namespace GameServer.API.Hubs
         [HubMethodName("SendCommand")]
         public async Task SendCommand(string containerID, string execId, string command)
         {
+            if (! await CheckPermission(containerID, Context.User.Identity.Name))
+                return;
+
             _logger.LogDebug($"send Command: {command}");
             _hubManager.SendCommand(containerID, execId, command);
+        }
+
+        private async Task<bool> CheckPermission(string serverID, string clientID)
+        {
+            var user = await _databaseService.GetUser(clientID);
+
+            return user.AccessibleServerIDs.Contains(serverID);
         }
     }
 }

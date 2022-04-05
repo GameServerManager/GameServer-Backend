@@ -16,24 +16,35 @@ namespace GameServer.API.Controllers
     public class ServerController : ControllerBase
     {
         private IServerService _service;
+        private IDatabaseService _databaseService;
 
-        public ServerController(IServerService service)
+        public ServerController(IServerService service, IDatabaseService databaseService)
         {
             _service = service;
+            _databaseService = databaseService;
         }
 
         [HttpGet]
         [Authorize(Roles = ("User"))]
         public async Task<IEnumerable<Server>> Get()
         {
-            var list = await _service.GetAll();
-            return list.AsEnumerable();
+            var user = await _databaseService.GetUser(HttpContext.User.Identity.Name);
+
+            var serverList = new List<Server>();
+            foreach (var id in user.AccessibleServerIDs)
+            {
+                serverList.Add(await _service.Get(id));
+            }
+            return serverList;
         }
 
         [HttpGet("{id}")]
         [Authorize(Roles = ("User"))]
         public async Task<Server> Get(string id)
         {
+            if (! await CheckPermission(id, HttpContext.User.Identity.Name))
+                return null;
+
             var list = await _service.Get(id);
             return list;
         }
@@ -46,11 +57,13 @@ namespace GameServer.API.Controllers
             return Ok();
         }
 
-
         [HttpPost("{id}/Update")]
         [Authorize(Roles = ("User"))]
         public async Task<ActionResult> Update(string id)
         {
+            if (! await CheckPermission(id, HttpContext.User.Identity.Name))
+                return Forbid();
+
             await _service.Update(id);
             return Ok();
         }
@@ -60,6 +73,9 @@ namespace GameServer.API.Controllers
         [Authorize(Roles = ("User"))]
         public async Task<ActionResult> Start(string id)
         {
+            if (! await CheckPermission(id, HttpContext.User.Identity.Name))
+                return Forbid();
+
             await _service.Start(id);
             return Ok();
         }
@@ -69,6 +85,9 @@ namespace GameServer.API.Controllers
         [Authorize(Roles = ("User"))]
         public async Task<ActionResult> Stop(string id)
         {
+            if(! await CheckPermission(id, HttpContext.User.Identity.Name))
+                return Forbid();
+
             await _service.Stop(id);
             return Ok();
         }
@@ -77,8 +96,18 @@ namespace GameServer.API.Controllers
         [Authorize(Roles = ("User"))]
         public async Task<string> Log(string id)
         {
+            if (! await CheckPermission(id, HttpContext.User.Identity.Name))
+                return "";
+
             var log = await _service.GetLog(id);
             return JsonSerializer.Serialize(log);
+        }
+
+        private async Task<bool> CheckPermission(string serverID, string clientID)
+        {
+            var user = await _databaseService.GetUser(clientID);
+
+            return user.AccessibleServerIDs.Contains(serverID);
         }
     }
 }

@@ -16,7 +16,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy(corsName, b =>
     {
-        b.WithOrigins("http://localhost:3000", "https://localhost", "http://mauderer.eu", "https://mauderer.eu")
+        b.WithOrigins("http://localhost:3000", "http://localhost:3000", "http://mauderer.eu", "https://mauderer.eu")
             .AllowAnyHeader()
             .AllowCredentials();
         ;
@@ -54,13 +54,14 @@ builder.Services.AddAuthentication(x =>
         OnMessageReceived = context =>
         {
             var accessToken = context.Request.Headers.Authorization.ToString();
+            var fromQuery = context.Request.Query["access_token"].ToString();
 
             // If the request is for our hub...
             var path = context.HttpContext.Request.Path;
-            if (!string.IsNullOrEmpty(accessToken))
+            if (!string.IsNullOrEmpty(accessToken) | !string.IsNullOrEmpty(fromQuery))
             {
                 // Read the token out of the query string
-                context.Token = accessToken;
+                context.Token = !string.IsNullOrEmpty(accessToken) ? accessToken : fromQuery;
             }
             return Task.CompletedTask;
         },

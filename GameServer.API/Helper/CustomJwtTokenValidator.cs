@@ -39,6 +39,11 @@ namespace GameServer.API.Helper
             var tokenHandler = new JwtSecurityTokenHandler();
             try
             {
+                if (securityToken.StartsWith("Bearer "))
+                {
+                    securityToken = securityToken.Remove(0, 7);
+                }
+
                 claim = tokenHandler.ValidateToken(securityToken, new TokenValidationParameters
                 {
                     ValidateIssuerSigningKey = true,
