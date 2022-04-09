@@ -68,22 +68,18 @@ builder.Services.AddAuthentication(x =>
         OnAuthenticationFailed = context =>
         {
             return Task.CompletedTask;
-
         },
         OnChallenge = context =>
         {
             return Task.CompletedTask;
-
         },
         OnForbidden = context =>
         {
             return Task.CompletedTask;
-
         },
         OnTokenValidated = context =>
         {
             return Task.CompletedTask;
-
         }
     };
 

@@ -53,8 +53,9 @@ namespace GameServer.API.Controllers
         [Authorize(Roles = ("User"))]
         public async Task<ActionResult> Import([FromBody] ServerConfig config)
         {
-            await _service.Import(config, (v) => { });
-            return Ok();
+            var id = await _service.Import(config);
+            await _databaseService.AddServerToUser(HttpContext.User.Identity.Name, id);
+            return Ok(id);
         }
 
         [HttpPost("{id}/Update")]

@@ -6,6 +6,6 @@ namespace GameServer.API.Services
     {
         Task<User> GetUser(string username);
         Task SaveNewUser(User user);
-
+        Task AddServerToUser(string? name, string id);
     }
 }

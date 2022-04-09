@@ -7,7 +7,7 @@ namespace GameServer.API.Services
     {
         Task<Server> Get(string id);
         Task<List<Server>> GetAll();
-        Task Import(ServerConfig id, Action<string> callBack);
+        Task<string> Import(ServerConfig id);
         Task<Status> Start(string id);
         Task<Status> Stop(string id);
         Task Update(string id);

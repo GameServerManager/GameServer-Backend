@@ -54,5 +54,15 @@ namespace GameServer.API.Services
         {
             await UserCollection.InsertOneAsync(user);
         }
+
+        public async Task AddServerToUser(string? name, string id)
+        {
+            var filter = Builders<User>.Filter;
+            var userIdFilter = filter.Eq(x => x.Username, name);
+            var update = Builders<User>.Update;
+            var addId = update.AddToSet(u => u.AccessibleServerIDs, id);
+
+            var user = await UserCollection.UpdateOneAsync(userIdFilter, addId);
+        }
     }
 }

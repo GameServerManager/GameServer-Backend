@@ -94,7 +94,7 @@ namespace GameServer.API.Services
             return Logs;
         }
 
-        public async Task Import(ServerConfig id, Action<string> callBack)
+        public async Task<string> Import(ServerConfig id)
         {
             var config = new ImportRequest()
             {
@@ -117,7 +117,7 @@ namespace GameServer.API.Services
                         ScriptCommand = id.ContainerScripts.UpdateScript.Entrypoint,
                     }
                 },
-                Discription = id.Discription,
+                Discription = id.Description,
                 Image = id.Image,
                 Name = id.Name,
             };
@@ -154,12 +154,8 @@ namespace GameServer.API.Services
                 config.Ports.Add(pm);
             }
 
-            var stream = client.Import(config);
-            var cToken = new CancellationTokenSource();
-            while (await stream.ResponseStream.MoveNext(cToken.Token))
-            {
-                callBack(stream.ResponseStream.Current.Message);
-            }
+            var contID = client.Import(config);
+            return contID.ID;
         }
 
         public async Task SendCommand(string containerID, string execId, string command)
