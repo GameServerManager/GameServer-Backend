@@ -10,7 +10,8 @@ namespace GameServer.API.Services
 
         public LoggerService(string url)
         {
-            channel = GrpcChannel.ForAddress(url);
+            channel = GrpcChannel.ForAddress(url, new GrpcChannelOptions() { HttpHandler = new HttpClientHandler() { ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator } });
+            //channel = GrpcChannel.ForAddress(url);
             client = new LoggerAPI.LoggerAPIClient(channel);
         }
 

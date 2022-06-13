@@ -10,19 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 string gRPCUrl = "https://localhost:7055";
-var corsName = "cors";
 
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy(corsName, b =>
-    {
-        b.WithOrigins("http://localhost:3000", "http://localhost:3000", "http://mauderer.eu", "https://mauderer.eu")
-            .AllowAnyHeader()
-            .AllowCredentials();
-        ;
-    });
-
-});
 builder.Services.AddSingleton<ILoggerService>(s => new LoggerService(gRPCUrl))
     .AddSingleton<IServerService>(s => new ServerService(gRPCUrl))
     .AddSingleton<IHealthCheckService>(s => new HealthCheckService(gRPCUrl))
@@ -38,7 +26,6 @@ builder.Services.AddSignalR();
 var doc = new XmlDocument();
 doc.Load("secret.xml");
 var key = doc.DocumentElement?.SelectSingleNode("/secret/key")?.InnerText;
-
 
 builder.Services.AddAuthentication(x =>
 {
@@ -113,7 +100,12 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
-app.UseCors(corsName);
+app.UseCors((b) =>
+{
+    b.WithOrigins("http://localhost:3000", "http://localhost", "http://localhost:3000", "http://mauderer.eu", "https://mauderer.eu")
+        .AllowAnyHeader()
+        .AllowCredentials();
+});
 app.MapControllers();
 app.MapHub<ConsoleHub>("/consoleHub");
 app.Run();

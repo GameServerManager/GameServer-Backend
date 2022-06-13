@@ -26,4 +26,10 @@
     </Protobuf>
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="secret.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

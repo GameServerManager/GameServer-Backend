@@ -11,7 +11,7 @@ namespace GameServer.API.Services
 
         public ServerService(string url)
         {
-            channel = GrpcChannel.ForAddress(url);
+            channel = GrpcChannel.ForAddress(url, new GrpcChannelOptions() { HttpHandler = new HttpClientHandler() { ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator } });
             client = new ServerAPI.ServerAPIClient(channel);
 
         }
@@ -101,23 +101,23 @@ namespace GameServer.API.Services
                 Comment = id.Comment,
                 ContainerScripts = new()
                 {
-                    InstalationScript = new()
+                    InstallationScript = new()
                     {
                         Entrypoint = id.ContainerScripts.InstalationScript.Entrypoint,
-                        ScriptCommand = id.ContainerScripts.InstalationScript.Entrypoint,
+                        ScriptCommand = id.ContainerScripts.InstalationScript.ScriptCommand,
                     },
                     StartScript = new()
                     {
                         Entrypoint = id.ContainerScripts.StartScript.Entrypoint,
-                        ScriptCommand = id.ContainerScripts.StartScript.Entrypoint,
+                        ScriptCommand = id.ContainerScripts.StartScript.ScriptCommand,
                     },
                     UpdateScript = new()
                     {
                         Entrypoint = id.ContainerScripts.UpdateScript.Entrypoint,
-                        ScriptCommand = id.ContainerScripts.UpdateScript.Entrypoint,
+                        ScriptCommand = id.ContainerScripts.UpdateScript.ScriptCommand,
                     }
                 },
-                Discription = id.Description,
+                Description = id.Description,
                 Image = id.Image,
                 Name = id.Name,
             };

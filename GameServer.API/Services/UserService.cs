@@ -64,6 +64,7 @@ namespace GameServer.API.Services
             await _databaseService.SaveNewUser(new Models.User() { 
                 Username = username, 
                 Hash = PasswordHash.HashPassword(password, salt), 
+                AccessibleServerIDs = Array.Empty<string>(),
                 Role = "User", 
                 Salt = salt
             });

@@ -33,7 +33,11 @@ namespace GameServer.API.Controllers
             var serverList = new List<Server>();
             foreach (var id in user.AccessibleServerIDs)
             {
-                serverList.Add(await _service.Get(id));
+                try
+                {
+                    serverList.Add(await _service.Get(id));
+                }
+                catch (Exception){}
             }
             return serverList;
         }
